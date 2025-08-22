@@ -33,7 +33,7 @@ class ArtGenerator:
             cv2.imshow("Art Generator", self.canvas)
     
     def fade_to_background(self):
-        self.canvas = self.canvas * 0.95 + self.background_color * 0.05
+        self.canvas = self.canvas * 0.97 + self.background_color * 0.03
 
 
     def remove_old_drawings(self):
@@ -55,5 +55,5 @@ class ArtGenerator:
 
             
 if __name__ == "__main__":
-    art_gen = ArtGenerator(drawing_choices, 160, 90, new_drawing_chance=0.05)
+    art_gen = ArtGenerator(drawing_choices, 320, 180, new_drawing_chance=0.04)
     art_gen.run()
