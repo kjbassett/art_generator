@@ -7,17 +7,29 @@ class Drawing(ABC):
         self.i = 0  # Current iteration AKA frame counter
         self.x = random.randint(0, canvas_width - 1)
         self.y = random.randint(0, canvas_height - 1)
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_height
         self.color = (
             random.random(),
             random.random(),
             random.random()
         )
         self.complete = False  # Flag for ArtGenerator to keep or remove drawing
+        self.child_drawings = []
     
 
     def draw(self, canvas):
         self._draw(canvas)
+        self.draw_children(canvas)
+        self.remove_finished_children()
         self.i += 1
+    
+    def draw_children(self, canvas):
+        for cd in self.child_drawings:
+            cd.draw(canvas)
+
+    def remove_finished_children(self):
+        self.child_drawings = [cd for cd in self.child_drawings if not cd.complete]
     
     @abstractmethod
     def _draw(self, canvas):
@@ -28,6 +40,32 @@ class dot(Drawing):
     def _draw(self, canvas):
         canvas[self.y, self.x] = self.color
         self.complete = True
+
+
+class line(Drawing):
+    def __init__(self, canvas_width, canvas_height, x0: int=None, y0: int=None, x1: int=None, y1: int=None, duration: int=None):
+        super().__init__(canvas_width, canvas_height)
+        self.x0 = self.x if x0 is None else x0
+        self.y0 = self.y if y0 is None else y0
+        self.x1 = random.randint(0, canvas_width - 1) if x1 is None else x1
+        self.y1 = random.randint(0, canvas_height - 1) if y1 is None else y1
+        self.x = self.x0
+        self.y = self.y0
+        self.duration = random.randint(1, 20) if duration is None else duration
+        self.step_x = (self.x1 - self.x0) / duration
+        self.step_y = (self.y1 - self.y0) / duration
+
+    def _draw(self, canvas):
+        self.x += self.step_x
+        self.y += self.step_y
+        x = round(self.x)
+        y = round(self.y)
+        if x >= canvas.shape[1] or x < 0 or y >= canvas.shape[0] or y < 0:
+            self.complete = True
+            return
+        canvas[y, x] = self.color
+        if self.i > self.duration:
+            self.complete = True
 
 
 class invert(Drawing):
@@ -100,5 +138,30 @@ class spiral(Drawing):
             self.complete = True
 
 
+class firework(Drawing):
+    def __init__(self, canvas_width, canvas_height):
+        super().__init__(canvas_width, canvas_height)
+        self.phase = 0  # 0 = fly up, 1 = explosion
+        self.n_children = random.randint(100, 200)
+        self.max_radius = random.randint(int(self.canvas_width * 0.1), int(self.canvas_width * 0.5))
+
+    def _draw(self, canvas):
+        if self.phase == 0:
+            y = canvas.shape[0] - 1 - self.i
+            if y >= self.y:
+                canvas[y, self.x] = [1, 1, 1]
+            else:
+                for n in range(self.n_children):
+                    radius = random.random() * self.max_radius
+                    angle = random.random() * 2 * math.pi
+                    end_x = self.x + round(math.cos(angle) * radius)
+                    end_y = self.y + round(math.sin(angle) * radius)
+                    self.child_drawings.append(line(self.canvas_width, self.canvas_height, self.x, self.y, end_x, end_y, 20))
+                self.phase = 1
+        if self.phase == 1:
+            if not self.child_drawings:
+                self.complete = True
+            
+
 # put your drawing class in this list if you want it to appear
-drawing_choices = [dot, parabola, spiral]
+drawing_choices = [dot, parabola, spiral, firework]
