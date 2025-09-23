@@ -143,7 +143,8 @@ class firework(Drawing):
         super().__init__(canvas_width, canvas_height)
         self.phase = 0  # 0 = fly up, 1 = explosion
         self.n_children = random.randint(100, 200)
-        self.max_radius = random.randint(int(self.canvas_width * 0.1), int(self.canvas_width * 0.5))
+        self.max_radius = random.randint(int(self.canvas_width * 0.05), int(self.canvas_width * 0.4))
+        self.explosion_duration = random.randint(15, 100)
 
     def _draw(self, canvas):
         if self.phase == 0:
@@ -156,12 +157,21 @@ class firework(Drawing):
                     angle = random.random() * 2 * math.pi
                     end_x = self.x + round(math.cos(angle) * radius)
                     end_y = self.y + round(math.sin(angle) * radius)
-                    self.child_drawings.append(line(self.canvas_width, self.canvas_height, self.x, self.y, end_x, end_y, 20))
+                    self.child_drawings.append(line(self.canvas_width, self.canvas_height, self.x, self.y, end_x, end_y, self.explosion_duration))
                 self.phase = 1
         if self.phase == 1:
             if not self.child_drawings:
                 self.complete = True
-            
+
+
+class vine(Drawing):
+    def __init__(self, canvas_width, canvas_height):
+        super().__init__(canvas_width, canvas_height)
+    
+    
+    def _draw(self, canvas):
+        pass
+                    
 
 # put your drawing class in this list if you want it to appear
 drawing_choices = [dot, parabola, spiral, firework]
