@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import math
 import random
+from utilities import round_and_draw
 
 class Drawing(ABC):
     def __init__(self, canvas_width, canvas_height):
@@ -52,8 +53,8 @@ class line(Drawing):
         self.x = self.x0
         self.y = self.y0
         self.duration = random.randint(1, 20) if duration is None else duration
-        self.step_x = (self.x1 - self.x0) / duration
-        self.step_y = (self.y1 - self.y0) / duration
+        self.step_x = (self.x1 - self.x0) / self.duration
+        self.step_y = (self.y1 - self.y0) / self.duration
 
     def _draw(self, canvas):
         self.x += self.step_x
@@ -142,7 +143,7 @@ class firework(Drawing):
     def __init__(self, canvas_width, canvas_height):
         super().__init__(canvas_width, canvas_height)
         self.phase = 0  # 0 = fly up, 1 = explosion
-        self.n_children = random.randint(100, 200)
+        self.n_children = random.randint(100, 400)
         self.max_radius = random.randint(int(self.canvas_width * 0.05), int(self.canvas_width * 0.4))
         self.explosion_duration = random.randint(15, 100)
 
@@ -167,11 +168,28 @@ class firework(Drawing):
 class vine(Drawing):
     def __init__(self, canvas_width, canvas_height):
         super().__init__(canvas_width, canvas_height)
-    
-    
+        self.direction = random.choice([0, 0.5, 1, 1.5])  # right, up, left, down
+        print(self.direction)
+        if self.direction == 0:
+            self.x = 0
+        elif self.direction == 0.5:
+            self.y = canvas_height-1
+        elif self.direction == 1:
+            self.x = canvas_width - 1
+        else:
+            self.y = 0
+        self.direction *= math.pi
+        self.color = (0, self.color[1], 0) # green
+
     def _draw(self, canvas):
-        pass
-                    
+        if not round_and_draw(canvas, self.x, self.y, self.color):
+            self.complete = True
+            return
+        self.x += math.cos(self.direction)
+        self.y -= math.sin(self.direction)
+        self.direction += random.gauss() * 0.314 # 0.314 is 5% of of a full circle in radians
+        
+                 
 
 # put your drawing class in this list if you want it to appear
-drawing_choices = [dot, parabola, spiral, firework]
+drawing_choices = [spiral, dot, line, firework, vine]

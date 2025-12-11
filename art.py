@@ -55,5 +55,5 @@ class ArtGenerator:
 
             
 if __name__ == "__main__":
-    art_gen = ArtGenerator(drawing_choices, 320, 180, new_drawing_chance=0.04)
+    art_gen = ArtGenerator(drawing_choices, 640, 360, new_drawing_chance=0.1)
     art_gen.run()
