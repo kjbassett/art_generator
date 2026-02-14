@@ -191,4 +191,31 @@ class vine(Drawing):
         
                  
 
+class lissajous(Drawing):
+    # Ken promised Pixel that he wouldn't touch it without Pixel's permission
+    # Two signals at different frequencies, tracing the shape of their meeting.
+    # The ratio decides everything; the canvas shows what the math feels like.
+    _PAIRS = [(1, 2), (1, 3), (2, 3), (3, 4), (3, 5), (4, 5), (2, 5)]
+
+    def __init__(self, canvas_width, canvas_height):
+        super().__init__(canvas_width, canvas_height)
+        self.x  = random.randint(canvas_width  // 3, 2 * canvas_width  // 3)
+        self.y  = random.randint(canvas_height // 3, 2 * canvas_height // 3)
+        self.rx = random.randint(canvas_width  // 6, canvas_width  // 3)
+        self.ry = random.randint(canvas_height // 6, canvas_height // 3)
+        self.fx, self.fy = random.choice(self._PAIRS)
+        self.phase    = random.uniform(0, math.pi / 2)
+        self.speed    = random.uniform(0.015, 0.04)
+        self.duration = int(2 * math.pi / self.speed * 2)   # two full cycles
+
+    def _draw(self, canvas):
+        t = self.i * self.speed
+        x = round(self.x + self.rx * math.sin(self.fx * t + self.phase))
+        y = round(self.y + self.ry * math.sin(self.fy * t))
+        if 0 <= x < canvas.shape[1] and 0 <= y < canvas.shape[0]:
+            canvas[y, x] = self.color
+        if self.i >= self.duration:
+            self.complete = True
+
+
 drawing_choices = [cls for cls in Drawing.__subclasses__() if not getattr(cls, '__abstractmethods__', None)]
