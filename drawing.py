@@ -191,5 +191,4 @@ class vine(Drawing):
         
                  
 
-# put your drawing class in this list if you want it to appear
-drawing_choices = [spiral, dot, line, firework, vine]
+drawing_choices = [cls for cls in Drawing.__subclasses__() if not getattr(cls, '__abstractmethods__', None)]
