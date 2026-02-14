@@ -120,7 +120,7 @@ class spiral(Drawing):
         super().__init__(canvas_width, canvas_height)
         self.delta_radius = random.random() * 2
         self.delta_angle = random.random() * math.pi # 0-180 degrees
-        self.max_iterations = random.random() * max(canvas_height, canvas_width) / self.delta_angle
+        self.max_iterations = random.random() * max(canvas_height, canvas_width) / self.delta_radius
 
     def _draw(self, canvas):
         r = self.delta_radius * self.i
