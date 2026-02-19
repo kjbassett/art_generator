@@ -169,7 +169,6 @@ class vine(Drawing):
     def __init__(self, canvas_width, canvas_height):
         super().__init__(canvas_width, canvas_height)
         self.direction = random.choice([0, 0.5, 1, 1.5])  # right, up, left, down
-        print(self.direction)
         if self.direction == 0:
             self.x = 0
         elif self.direction == 0.5:
@@ -179,7 +178,11 @@ class vine(Drawing):
         else:
             self.y = 0
         self.direction *= math.pi
+        self.direction_change = 0
+        self.previous_direction_change = 0
         self.color = (0, self.color[1], 0) # green
+        self.canvas_width = self.canvas_width
+        self.canvas_height = self.canvas_height
 
     def _draw(self, canvas):
         if not round_and_draw(canvas, self.x, self.y, self.color):
@@ -187,7 +190,18 @@ class vine(Drawing):
             return
         self.x += math.cos(self.direction)
         self.y -= math.sin(self.direction)
-        self.direction += random.gauss() * 0.314 # 0.314 is 5% of of a full circle in radians
+        # smooth direction changes out with weighted average of previous change and new change (90% old, 10% new)
+        self.direction_change = self.previous_direction_change * 0.9 + random.gauss() * 0.314 * 0.1 # 0.314 is 5% of of a full circle in radians
+        self.previous_direction_change = self.direction_change
+        self.direction += self.direction_change
+
+        # spawn new branch occasionally
+        if random.random() <= 0.005 and len(self.child_drawings) <= 3:
+            branch = vine(self.canvas_width, self.canvas_height)
+            branch.x = self.x
+            branch.y = self.y
+            branch.direction = self.direction
+            self.child_drawings.append(branch)
         
                  
 
