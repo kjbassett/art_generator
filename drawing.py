@@ -69,12 +69,6 @@ class line(Drawing):
             self.complete = True
 
 
-class invert(Drawing):
-    def _draw(self, canvas):
-        canvas[:] = 1 - canvas[:]
-        self.complete = True
-
-
 class parabola(Drawing):
     def __init__(self, canvas_width, canvas_height):
         super().__init__(canvas_width, canvas_height)
@@ -98,21 +92,11 @@ class parabola(Drawing):
 
         
         # if points are off the window, end the drawing
-        if x1 >= canvas.shape[1] or x1 < 0:
+        success1 = round_and_draw(canvas, x1, y1, self.color)
+        success2 = round_and_draw(canvas, x2, y2, self.color)
+        if not success1 and not success2:
             self.complete = True
             return
-        if x2 >= canvas.shape[1] or x2 < 0:
-            self.complete = True
-            return
-        if y1 >= canvas.shape[0] or y1 < 0:
-            self.complete = True
-            return
-        if y2 >= canvas.shape[0] or y2 < 0:
-            self.complete = True
-            return
-
-        canvas[y1, x1] = self.color
-        canvas[y2, x2] = self.color
 
 
 class spiral(Drawing):
