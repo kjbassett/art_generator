@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import math
 import random
 from utilities import round_and_draw
+import numpy as np
 
 class Drawing(ABC):
     def __init__(self, canvas_width, canvas_height):
@@ -213,6 +214,30 @@ class lissajous(Drawing):
         if 0 <= x < canvas.shape[1] and 0 <= y < canvas.shape[0]:
             canvas[y, x] = self.color
         if self.i >= self.duration:
+            self.complete = True
+    
+
+class circle_pattern_wave(Drawing):
+    def __init__(self, canvas_width, canvas_height):
+        super().__init__(canvas_width, canvas_height)
+        self.radius_delta = random.random() * 2
+        self.max_i = max(
+            [
+                self.x**2 + self.y**2,
+                self.x**2 + (canvas_height - self.y)**2,
+                (canvas_width - self.x)**2 + self.y**2,
+                (canvas_width - self.x)**2 + (canvas_height - self.y)**2
+            ]
+        ) ** 0.5
+        self.max_i /= self.radius_delta
+        self.ogrid = np.ogrid[:canvas_height, :canvas_width]
+    
+    def _draw(self, canvas):
+        radius = self.i * self.radius_delta
+        y, x = self.ogrid
+        mask = np.round((x - self.x)**2 + (y - self.y)**2) == round(radius**2)
+        canvas[mask] = self.color
+        if self.i >= self.max_i:
             self.complete = True
 
 
