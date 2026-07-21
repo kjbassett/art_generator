@@ -3,6 +3,7 @@ import math
 import random
 from utilities import round_and_draw
 import numpy as np
+import cv2
 
 class Drawing(ABC):
     def __init__(self, canvas_width, canvas_height):
@@ -238,6 +239,53 @@ class circle_pattern_wave(Drawing):
         mask = np.round((x - self.x)**2 + (y - self.y)**2) == round(radius**2)
         canvas[mask] = self.color
         if self.i >= self.max_i:
+            self.complete = True
+
+
+class battery(Drawing):
+    # A small lithium coin cell, like the ones that power watches and key fobs.
+    BODY_COLOR = (0.72, 0.72, 0.76)   # brushed nickel/silver
+    RIM_COLOR  = (0.40, 0.40, 0.44)
+    TEXT_COLOR = (0.05, 0.05, 0.05)
+    PLUS_COLOR = (0.20, 0.45, 0.72)   # copper-ish (BGR), for the positive terminal mark
+
+    def __init__(self, canvas_width, canvas_height):
+        super().__init__(canvas_width, canvas_height)
+        self.radius = random.randint(35, 55)
+        self.x = random.randint(self.radius + 5, max(self.radius + 6, canvas_width - self.radius - 5))
+        self.y = random.randint(self.radius + 5, max(self.radius + 6, canvas_height - self.radius - 5))
+        self.color = self.BODY_COLOR
+        self.grow_duration = self.radius
+        self.hold_duration = 90
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        (base_w, _), _ = cv2.getTextSize("Duracell", font, 1.0, 1)
+        self.text_scale = (self.radius * 1.5) / base_w
+        (self.text_w, self.text_h), _ = cv2.getTextSize("Duracell", font, self.text_scale, 1)
+
+    def _draw_body(self, canvas, radius):
+        cv2.circle(canvas, (self.x, self.y), radius, self.BODY_COLOR, -1, cv2.LINE_AA)
+        cv2.circle(canvas, (self.x, self.y), radius, self.RIM_COLOR, 2, cv2.LINE_AA)
+
+    def _draw(self, canvas):
+        if self.i <= self.grow_duration:
+            radius = max(1, round(self.radius * self.i / self.grow_duration))
+            self._draw_body(canvas, radius)
+        elif self.i == self.grow_duration + 1:
+            self._draw_body(canvas, self.radius)
+            cv2.circle(canvas, (self.x, self.y), round(self.radius * 0.75), self.RIM_COLOR, 1, cv2.LINE_AA)
+
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            tx = round(self.x - self.text_w / 2)
+            ty = round(self.y + self.text_h / 2)
+            cv2.putText(canvas, "Duracell", (tx, ty), font, self.text_scale, self.TEXT_COLOR, 1, cv2.LINE_AA)
+
+            plus_y = round(self.y - self.radius * 0.55)
+            plus_len = max(2, round(self.radius * 0.12))
+            cv2.line(canvas, (self.x - plus_len, plus_y), (self.x + plus_len, plus_y), self.PLUS_COLOR, 1, cv2.LINE_AA)
+            cv2.line(canvas, (self.x, plus_y - plus_len), (self.x, plus_y + plus_len), self.PLUS_COLOR, 1, cv2.LINE_AA)
+
+        if self.i >= self.grow_duration + self.hold_duration:
             self.complete = True
 
 

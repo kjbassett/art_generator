@@ -1,4 +1,3 @@
-
 import random
 
 def choose_points_on_sides(x, y, canvas_width, canvas_height):
